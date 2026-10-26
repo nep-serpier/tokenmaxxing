@@ -132,27 +132,35 @@ function doorOn(m: Model, trim: string, width = 0.62): void {
   nightGlow(m.box([0.08, 0.16, 0.08], "#f4e6c0", [width / 2 + 0.18, 0.7, 0.07], 0.02), "#ffe28a");
 }
 
-/** A white picket fence along x from `x0` to `x1`. */
-function picket(m: Model, x0: number, x1: number, z: number, alongZ = false): void {
-  const n = Math.max(1, Math.round(Math.abs(x1 - x0) * 3));
+/** One run of the lot's fence, the 2D art's: a thick rail and chunky posts every half tile, ink-edged light wood. */
+function picket(m: Model, x0: number, x1: number, z: number, alongZ = false, solid = false): void {
   const part = alongZ ? m.part([z, 0, 0], Math.PI / 2) : m.part([0, 0, z]);
   const a = Math.min(x0, x1);
-  for (let i = 0; i <= n; i++) {
-    const x = a + (i / n) * Math.abs(x1 - x0);
-    part.box([0.07, 0.42, 0.05], "#fbf7ef", [x, 0, 0], 0.015);
-    part.cyl(0.035, 0.06, "#fbf7ef", [x, 0.42, 0], 0.001, 4);
+  const len = Math.abs(x1 - x0);
+  if (solid) {
+    // The side runs are drawn solid in 2D: a board the length of the run.
+    part.box([len, 0.34, 0.07], C.ink, [(x0 + x1) / 2, 0.05, 0], 0.01);
+    part.box([len - 0.06, 0.28, 0.08], C.woodLight, [(x0 + x1) / 2, 0.08, 0], 0.005);
   }
-  part.box([Math.abs(x1 - x0), 0.05, 0.03], "#fbf7ef", [(x0 + x1) / 2, 0.12, 0.03]);
-  part.box([Math.abs(x1 - x0), 0.05, 0.03], "#fbf7ef", [(x0 + x1) / 2, 0.3, 0.03]);
+  const n = Math.max(1, Math.round(len / 0.5));
+  for (let i = 0; i <= n; i++) {
+    const x = a + (i / n) * len;
+    part.box([0.2, 0.42, 0.1], C.ink, [x, 0, 0], 0.01);
+    part.box([0.1, 0.34, 0.12], C.woodLight, [x, 0.04, 0], 0.005);
+  }
+  if (!solid) {
+    part.box([len, 0.14, 0.08], C.ink, [(x0 + x1) / 2, 0.22, 0.01], 0.005);
+    part.box([len, 0.06, 0.1], C.woodLight, [(x0 + x1) / 2, 0.26, 0.01], 0.003);
+  }
 }
 
-/** The lot's fence: back, sides, and the front with a gap for the path to the door. */
+/** The lot's fence, as in 2D: back, sides, and the front with a gap for the path to the door. */
 function yard(m: Model): void {
-  picket(m, -3.4, 3.4, -4.05);
-  picket(m, -3.4, -0.95, 0.62);
-  picket(m, 0.95, 3.4, 0.62);
-  picket(m, -4.05, 0.62, -3.42, true);
-  picket(m, -4.05, 0.62, 3.42, true);
+  picket(m, -3.375, 3.375, -4.05);
+  picket(m, -3.375, -0.7, 0.62);
+  picket(m, 0.65, 3.375, 0.62);
+  picket(m, -4.05, 0.62, -3.375, true, true);
+  picket(m, -4.05, 0.62, 3.375, true, true);
 }
 
 /** A signpost in the front garden: the company's name on a plank. */
