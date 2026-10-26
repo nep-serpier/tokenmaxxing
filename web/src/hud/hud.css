@@ -3416,9 +3416,14 @@ html[data-tier]:not([data-tier="low"]) .loot-table li .avatar {
   padding: 2px 8px;
   white-space: nowrap;
 }
-.hotbar-pick {
+html[data-tier] .hotbar .hotbar-pick {
   min-height: 28px;
-  padding: 0 8px;
+  padding: 0 10px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--accent);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
 }
 .hotbar-slots {
   display: flex;
@@ -3432,7 +3437,7 @@ html[data-tier]:not([data-tier="low"]) .loot-table li .avatar {
   border-radius: 8px;
   color: var(--ink);
 }
-.hotbar-slot {
+html[data-tier] .hotbar .hotbar-slot {
   position: relative;
   width: 44px;
   height: 44px;
@@ -3443,7 +3448,7 @@ html[data-tier]:not([data-tier="low"]) .loot-table li .avatar {
   border: 2px solid var(--ink);
   background: rgba(251, 247, 239, 0.9);
 }
-.hotbar-slot.on {
+html[data-tier] .hotbar .hotbar-slot.on {
   border-color: var(--accent);
   background: rgba(255, 211, 92, 0.85);
   box-shadow: 0 0 0 2px var(--accent);
@@ -3475,6 +3480,28 @@ html[data-tier]:not([data-tier="low"]) .loot-table li .avatar {
 .hotbar-n {
   right: 3px;
   bottom: 3px;
+}
+/* Narrow screens: a row across the width, above the tray; the hint is just the Pick up button. */
+.hotbar.narrow {
+  left: 8px;
+  right: 8px;
+  bottom: 60px;
+  align-items: center;
+}
+.hotbar.narrow .hotbar-hint {
+  padding: 0;
+  border: none;
+  background: none;
+}
+.hotbar.narrow .hotbar-slots {
+  justify-content: center;
+  max-width: 100%;
+}
+@media (max-width: 700px), (max-height: 500px) {
+  .hotbar-on .dialog,
+  .hotbar-on .piece-hint {
+    bottom: 150px;
+  }
 }
 /* The dialog and the piece hint sit above the bar on wide screens (narrow ones already lift them). */
 @media (min-width: 1151px) {

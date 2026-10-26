@@ -34,7 +34,8 @@ export function Hotbar() {
   }, [wallet, notice, room]);
   const mine = room === `office:${world.selfId}` && inMyOffice();
   const active = mine || ghost.mode !== null;
-  const n = slotsFit(width, narrow ? 316 : 424);
+  // Wide: right of the chat dock. Narrow: the whole width, in a row above the tray.
+  const n = slotsFit(width, narrow ? 16 : 424);
   const shown = slots.slice(0, n);
   useEffect(() => {
     // Lifts the dialog and the piece hint clear of the bar (see the hud.css block).
@@ -42,11 +43,11 @@ export function Hotbar() {
     return () => document.body.classList.remove("hotbar-on");
   }, [active, n, panel]);
   if (!me || !active || n === 0 || panel) return null;
-  const left = Math.max((width - n * 48) / 2, narrow ? 316 : 424);
+  const left = Math.max((width - n * 48) / 2, narrow ? 8 : 424);
   return (
-    <div className="hotbar" style={{ left }}>
+    <div className={narrow ? "hotbar narrow" : "hotbar"} style={narrow ? undefined : { left }}>
       <div className="hotbar-hint">
-        <span>F pick up · M move · Esc done</span>
+        {!narrow && <span>F pick up · M move · Esc done</span>}
         {mine && (
           <button type="button" className="hotbar-pick" onClick={take}>
             Pick up
