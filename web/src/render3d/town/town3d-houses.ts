@@ -156,11 +156,13 @@ function picket(m: Model, x0: number, x1: number, z: number, alongZ = false, sol
 
 /** The lot's fence, as in 2D: back, sides, and the front with a gap for the path to the door. */
 function yard(m: Model): void {
-  picket(m, -3.375, 3.375, -4.05);
-  picket(m, -3.375, -0.7, 0.62);
-  picket(m, 0.65, 3.375, 0.62);
-  picket(m, -4.05, 0.62, -3.375, true, true);
-  picket(m, -4.05, 0.62, 3.375, true, true);
+  // On the 2D lot's lines: the model's front (z = 0) is the lot's bottom edge less a quarter tile, the rails
+  // sit a third of a tile in from the lot's edges, the gap is -0.75..+0.625 tile round the door.
+  picket(m, -3.28, 3.28, -4.35);
+  picket(m, -3.28, -0.75, -0.03);
+  picket(m, 0.625, 3.28, -0.03);
+  picket(m, -4.35, -0.03, -3.28, true, true);
+  picket(m, -4.35, -0.03, 3.28, true, true);
 }
 
 /** A signpost in the front garden: the company's name on a plank. */
