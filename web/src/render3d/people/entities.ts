@@ -255,6 +255,13 @@ export class Entities {
   private remove(r: Rig): void {
     r.root.removeFromParent();
     disposeObject(r.root);
+    // The pet's model hangs on the group beside the person, not on them: take it away too, or a rebuilt rig
+    // (a new look, a stale one swept) leaves the old pet standing in the world.
+    if (r.pet) {
+      r.pet.root.removeFromParent();
+      disposeObject(r.pet.root);
+      r.pet = null;
+    }
     r.stack.remove();
     r.petLabel?.remove();
     r.burst?.dispose();
