@@ -811,9 +811,14 @@ export function setPlaque(model: Model, names: readonly string[]): void {
   (model as Panel).redraw(plaqueDraw(names));
 }
 
-const questBoard = (): Model => {
+/** A corkboard `W` wide with notes pinned to it and a plank over it saying `label`. Notes are `[x, y, w, colour]` on a 28 by 16 grid. */
+const corkBoard = (
+  W: number,
+  label: string,
+  notes: [number, number, number, string][],
+  signW: number,
+): Model => {
   const m = new Model();
-  const W = 1.8;
   const H = 1.0;
   const lift = 0.85;
   const cork = canvasTexture(96, 56, (g) => {
@@ -833,14 +838,6 @@ const questBoard = (): Model => {
   p.position.z = -0.46;
   m.add(p);
   // Notes: paper, a pin and a few scribbled lines each, as in the 2D art's six.
-  const notes: [number, number, number, string][] = [
-    [4, 4, 7, PAPER],
-    [13, 3, 6, "#f8e3a3"],
-    [21, 5, 7, PAPER],
-    [8, 11, 7, "#f8e3a3"],
-    [18, 11, 6, PAPER],
-    [25, 11, 4, "#f2a0b8"],
-  ];
   const cy = lift + (H + 0.12) / 2;
   for (const [i, [x, y, w, color]] of notes.entries()) {
     const nw = (w / 28) * W;
@@ -862,12 +859,12 @@ const questBoard = (): Model => {
   }
   // A plank over it: QUESTS.
   const sign = panel(
-    0.8,
+    signW,
     0.2,
     (g, w, h) => {
       g.fillStyle = WOOD;
       g.fillRect(0, 0, w, h);
-      text(g, "QUESTS", w / 2, h * 0.14, h * 0.72, PAPER, true, "center");
+      text(g, label, w / 2, h * 0.14, h * 0.72, PAPER, true, "center");
     },
     { frame: INK, lift: lift + H + 0.18, px: 64, smooth: true },
   );
@@ -875,6 +872,35 @@ const questBoard = (): Model => {
   m.add(sign);
   return m;
 };
+
+const questBoard = (): Model =>
+  corkBoard(
+    1.8,
+    "QUESTS",
+    [
+      [4, 4, 7, PAPER],
+      [13, 3, 6, "#f8e3a3"],
+      [21, 5, 7, PAPER],
+      [8, 11, 7, "#f8e3a3"],
+      [18, 11, 6, PAPER],
+      [25, 11, 4, "#f2a0b8"],
+    ],
+    0.8,
+  );
+
+/** The request pile (`tile:?`, one tile): the same cork with fewer, bigger notes under REQUESTS. */
+const requestBoard = (): Model =>
+  corkBoard(
+    0.9,
+    "REQUESTS",
+    [
+      [2, 3, 12, PAPER],
+      [15, 5, 11, "#f8e3a3"],
+      [4, 10, 11, "#9fd3ef"],
+      [17, 11, 9, "#f2a0b8"],
+    ],
+    0.88,
+  );
 
 /** The Hall of Fame wall, two tiles: a crest panel and a scroll of names, in gold frames. */
 const hallOfFame = (): Model => {
@@ -1418,6 +1444,7 @@ export const TAVERN_ASSETS: readonly Asset[] = [
   wide("tile:z", "Jukebox", 1, 1, jukebox),
   wide("tile:J", "Bar tab", 4, 1, barTab),
   wide("tile:m", "Quest board", 2, 1, questBoard),
+  wide("tile:?", "Request pile", 1, 1, requestBoard),
   wide("tile:A", "Hall of Fame", 2, 1, hallOfFame),
   wide("tile:P", "Regulars' plaque", 1, 1, plaque(3)),
   wide("tavern:plaque-2", "Regulars' plaque (right)", 1, 1, plaque(2)),
@@ -1567,6 +1594,7 @@ export function buildTavernRoom(): TavernRoom {
   put("tile:K", 13, 0);
   hang("tile:A", 14, 0);
   hang("tile:A", 16, 0);
+  hang("tile:?", 18, 0);
   put("tile:P", 20, 0);
   put("tile:f", 21, 0);
   put("tavern:plaque-2", 23, 0);
@@ -1613,10 +1641,11 @@ export function buildTavernRoom(): TavernRoom {
     put("tavern:chair", x - 1, z, 1);
     put("tavern:chair", x + 2, z, 3);
   };
+  // The middle of the floor is the poker table's: its chairs stay reachable from every side.
   dining(6, 7);
-  dining(15, 7);
+  dining(11, 7);
+  dining(13, 4);
   dining(20, 7);
-  dining(20, 11);
   // Booths along the south wall: benches against it, the table, and a bench facing it.
   const booth = (x: number) => {
     put("tavern:booth-r", x, 15, 2);
@@ -1627,7 +1656,7 @@ export function buildTavernRoom(): TavernRoom {
   };
   booth(3);
   booth(7);
-  booth(15);
+  booth(21);
 
   // ——— The entrance: a coat stand and an umbrella stand beside the door ———
   hang("tile:x", 12, 15, 2);
@@ -1641,7 +1670,7 @@ export function buildTavernRoom(): TavernRoom {
   // ——— Wall decor and lights ———
   hang("tavern:picture-0", 8, 0, 0, null);
   hang("tavern:picture-2", 0, 2, 1, null);
-  for (const x of [10, 18]) sconceAt(x, 0);
+  for (const x of [10, 19]) sconceAt(x, 0);
   sconceAt(0, 13, 1);
 
   const barkeep = makeBarkeep();

@@ -19,10 +19,10 @@ import {
   hallWall,
   hearth,
   jukebox,
-  requestPile,
   plaque,
   pokerTable,
   questBoard,
+  requestPile,
   stool,
   table,
 } from "./tavern.ts";
