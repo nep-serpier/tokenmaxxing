@@ -6,6 +6,7 @@ import { parsePhoneCode } from "@tokenmaxxing/core/pairing.ts";
 import type { Wallet } from "@tokenmaxxing/server/registry";
 import { typedSwitch } from "hanzio";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { setSettings } from "../game/jukebox.ts";
 import { roomName, world } from "../game/world.ts";
 import { redeem, town } from "../net.ts";
 import { storage } from "../storage.ts";
@@ -348,6 +349,7 @@ function Panel() {
       <Modal title="Menu">
         <nav className="menu">
           {inMyOffice && <OfficeLock />}
+            <MusicToggle />
           {MENU.map(([open, label]) => (
             <button key={open.kind} type="button" onClick={() => hud.set({ panel: open })}>
               {label}
@@ -360,6 +362,16 @@ function Panel() {
       </Modal>
     ),
   });
+}
+
+/** Mutes or unmutes all the music (the room's and the jukebox's), for this device. */
+function MusicToggle() {
+  const settings = useHud((s) => s.jukeSettings);
+  return (
+    <button type="button" onClick={() => setSettings({ ...settings, muted: !settings.muted })}>
+      {settings.muted ? "🔇 Music off" : "🔊 Music on"}
+    </button>
+  );
 }
 
 /** In my own office: open to visitors from my card, or only me, through the door. */
