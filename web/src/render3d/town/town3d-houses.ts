@@ -134,7 +134,7 @@ function doorOn(m: Model, trim: string, width = 0.62): void {
 
 /** One run of the lot's fence, the 2D art's: a thick rail and chunky posts every half tile, ink-edged light wood. */
 function picket(m: Model, x0: number, x1: number, z: number, alongZ = false, solid = false): void {
-  const part = alongZ ? m.part([z, 0, 0], Math.PI / 2) : m.part([0, 0, z]);
+  const part = alongZ ? m.part([z, 0, 0], -Math.PI / 2) : m.part([0, 0, z]);
   const a = Math.min(x0, x1);
   const len = Math.abs(x1 - x0);
   if (solid) {
@@ -156,13 +156,14 @@ function picket(m: Model, x0: number, x1: number, z: number, alongZ = false, sol
 
 /** The lot's fence, as in 2D: back, sides, and the front with a gap for the path to the door. */
 function yard(m: Model): void {
-  // On the 2D lot's lines: the model's front (z = 0) is the lot's bottom edge less a quarter tile, the rails
-  // sit a third of a tile in from the lot's edges, the gap is -0.75..+0.625 tile round the door.
-  picket(m, -3.28, 3.28, -4.35);
-  picket(m, -3.28, -0.75, -0.03);
-  picket(m, 0.625, 3.28, -0.03);
-  picket(m, -4.35, -0.03, -3.28, true, true);
-  picket(m, -4.35, -0.03, 3.28, true, true);
+  // On the 2D lot's lines, in the model's frame (its z = 0 is a quarter tile below the door tile's top): the
+  // lot's rails sit 2.3 and 6.65 tiles down its 7 x 5 tiles, the posts a fifth of a tile in from the sides, the
+  // gap is -0.75..+0.625 tile round the door.
+  picket(m, -3.3, 3.3, -3.95);
+  picket(m, -3.3, -0.75, 0.4);
+  picket(m, 0.625, 3.3, 0.4);
+  picket(m, -3.95, 0.4, -3.3, true, true);
+  picket(m, -3.95, 0.4, 3.3, true, true);
 }
 
 /** A signpost in the front garden: the company's name on a plank. */
