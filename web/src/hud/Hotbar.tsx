@@ -1,86 +1,93 @@
-import { itemById } from "@tokenmaxxing/core/shop.ts";
+import { type Item, itemById } from "@tokenmaxxing/core/shop.ts";
+import { pieceOfDrop } from "@tokenmaxxing/core/world.ts";
 import { useEffect, useState } from "react";
-import { ghost } from "../game/furniture.ts";
-import { slotsFit } from "../game/hotbar.ts";
-import { inMyOffice, refreshBag, toggle, useHotbar } from "../game/hotbar-state.ts";
-import { take } from "../game/input.ts";
+import { ghost, startPlace } from "../game/furniture.ts";
 import { world } from "../game/world.ts";
-import { useHud } from "../store.ts";
+import { town } from "../net.ts";
+import { hud, useHud } from "../store.ts";
 import { merchName } from "./Merch.tsx";
 import { ItemImage } from "./Shop.tsx";
-import { useNarrow } from "./ui.tsx";
+
+/** Slots on the bar, as many as there are number keys. The rest are a click away in the bag. */
+const SLOTS = 9;
 
 /**
- * The building hotbar: your furniture in up to nine slots along the bottom, in your own office (and while a
- * piece is being placed). 1-9 or a tap holds a piece (the ghost, `startPlace`), the same again lets go.
+ * In your own office, holding things to put down: a bar of them along the bottom, as in Minecraft, each with how
+ * many you hold. A click (or its number key) picks one up to place: the ghost follows the pointer, a click puts it
+ * down. The bar follows the bag: a piece put down, bought or traded shows at once.
  */
 export function Hotbar() {
-  const me = useHud((s) => s.me);
+  const mine = useHud((s) => s.room === `office:${world.selfId}`);
   const wallet = useHud((s) => s.wallet);
-  const notice = useHud((s) => s.notice);
-  const room = useHud((s) => s.room);
+  const me = useHud((s) => s.me);
   const panel = useHud((s) => s.panel);
-  const narrow = useNarrow();
-  const { slots, counts, selected } = useHotbar();
-  const [width, setWidth] = useState(() => window.innerWidth);
+  // A dialog comes and goes as placing starts and ends: the slot being placed lights up with it.
+  useHud((s) => s.dialog);
+  const [rows, setRows] = useState<{ item: Item; count: number }[]>([]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a changed wallet is a piece put down, bought or traded
   useEffect(() => {
-    const on = () => setWidth(window.innerWidth);
-    window.addEventListener("resize", on);
-    return () => window.removeEventListener("resize", on);
-  }, []);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: a changed wallet or a settled trade can mean a new bag; so can entering the office
+    if (!mine) return;
+    let live = true;
+    void town.bag().then(
+      (bag) =>
+        live &&
+        setRows(
+          bag.flatMap((b) => {
+            const item = itemById(b.item);
+            return item && pieceOfDrop({ item: b.item }) ? [{ item, count: b.count }] : [];
+          }),
+        ),
+      () => {},
+    );
+    return () => {
+      live = false;
+    };
+  }, [mine, wallet]);
+  const shown = rows.slice(0, SLOTS);
+  // 1 to 9 pick up the piece in that slot, unless a panel is open or a field is being typed in.
   useEffect(() => {
-    void refreshBag();
-  }, [wallet, notice, room]);
-  const mine = room === `office:${world.selfId}` && inMyOffice();
-  const active = mine || ghost.mode !== null;
-  // Wide: right of the chat dock. Narrow: the whole width, in a row above the tray.
-  const n = slotsFit(width, narrow ? 16 : 424);
-  const shown = slots.slice(0, n);
-  useEffect(() => {
-    // Lifts the dialog and the piece hint clear of the bar (see the hud.css block).
-    document.body.classList.toggle("hotbar-on", active && n > 0 && !panel);
-    return () => document.body.classList.remove("hotbar-on");
-  }, [active, n, panel]);
-  if (!me || !active || n === 0 || panel) return null;
-  const left = Math.max((width - n * 48) / 2, narrow ? 8 : 424);
+    if (!mine) return;
+    const key = (e: KeyboardEvent) => {
+      const n = Number(e.key);
+      const target = e.target as HTMLElement | null;
+      if (!Number.isInteger(n) || n < 1 || n > shown.length || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (hud.get().panel || target?.closest("input, textarea, [contenteditable]")) return;
+      e.preventDefault();
+      startPlace(shown[n - 1]!.item.id);
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [mine, shown]);
+  if (!mine || !me || panel || rows.length === 0) return null;
+  const placing = ghost.mode?.kind === "place" ? ghost.mode.item : null;
+
   return (
-    <div className={narrow ? "hotbar narrow" : "hotbar"} style={narrow ? undefined : { left }}>
-      <div className="hotbar-hint">
-        {!narrow && <span>F pick up · M move · Esc done</span>}
-        {mine && (
-          <button type="button" className="hotbar-pick" onClick={take}>
-            Pick up
-          </button>
-        )}
-      </div>
-      <div className="hotbar-slots" role="toolbar" aria-label="Furniture hotbar">
-        {shown.length === 0 && <span className="hotbar-empty">No furniture in your bag</span>}
-        {shown.map((item, i) => {
-          const it = itemById(item);
-          if (!it) return null;
-          return (
-            <button
-              key={item}
-              type="button"
-              className={`hotbar-slot${item === selected ? " on" : ""}`}
-              aria-pressed={item === selected}
-              aria-label={`${i + 1}: ${merchName(it)} ×${counts[item] ?? 0}`}
-              title={`${merchName(it)} (${i + 1})`}
-              onClick={(e) => {
-                toggle(item);
-                e.currentTarget.blur();
-              }}
-            >
-              <span className="hotbar-icon">
-                <ItemImage item={it} look={me.look} bare />
-              </span>
-              <span className="hotbar-key">{i + 1}</span>
-              {(counts[item] ?? 0) > 1 && <span className="hotbar-n">{counts[item]}</span>}
-            </button>
-          );
-        })}
-      </div>
+    <div className="hotbar" role="toolbar" aria-label="Things to put down">
+      {shown.map(({ item, count }, i) => (
+        <button
+          key={item.id}
+          type="button"
+          className={placing === item.id ? "slot on" : "slot"}
+          aria-pressed={placing === item.id}
+          aria-label={`${merchName(item)} ×${count}, key ${i + 1}`}
+          title={`${merchName(item)} ×${count} (${i + 1})`}
+          onClick={() => startPlace(item.id)}
+        >
+          <ItemImage item={item} look={me.look} bare />
+          <span className="key">{i + 1}</span>
+          {count > 1 && <span className="n">{count}</span>}
+        </button>
+      ))}
+      {rows.length > SLOTS && (
+        <button
+          type="button"
+          className="slot more"
+          title="The rest of what you hold"
+          onClick={() => hud.set({ panel: { kind: "bag", tab: "things" } })}
+        >
+          +{rows.length - SLOTS}
+        </button>
+      )}
     </div>
   );
 }

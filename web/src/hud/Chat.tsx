@@ -185,6 +185,7 @@ export const Chat = memo(function Chat({ match = false }: { match?: boolean }) {
   // Enter asks for the chat; one opening beside a panel doesn't take the focus on its own.
   const focused = useRef(focus);
   const wantInput = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reacts to a new Enter (`focus`) only
   useEffect(() => {
     if (focus !== focused.current) {
       wantInput.current = true;

@@ -29,7 +29,6 @@ import { camera, viewHooks, zoom } from "./camera.ts";
 import { chalkboardText } from "./chalkboard.ts";
 import { bindGhost, recordTake, tickGhost } from "./furniture.ts";
 import { gameHits } from "./games.ts";
-import { inMyOffice, pickSlot, stepSlot } from "./hotbar-state.ts";
 import { buildingAt, companyOnPlot, doorOf, peekHits } from "./houses.ts";
 import { chipHits, signHits } from "./labels.ts";
 import { merchantAt, openCart } from "./merchant.ts";
@@ -105,13 +104,6 @@ export function bindInput(canvas: HTMLElement): void {
       onArrival = null;
       return;
     }
-    // The hotbar (own office only): 1-9 pick a slot, [ ] step through them while a piece is held, F takes the piece faced.
-    if (!e.altKey) {
-      if (/^[1-9]$/.test(e.key) && pickSlot(Number(e.key) - 1)) return void e.preventDefault();
-      if ((e.key === "[" || e.key === "]") && stepSlot(e.key === "]" ? 1 : -1))
-        return void e.preventDefault();
-      if (e.key.toLowerCase() === "f" && inMyOffice()) return void take();
-    }
     switch (e.key.toLowerCase()) {
       case "x":
       case "shift":
@@ -177,11 +169,6 @@ export function bindInput(canvas: HTMLElement): void {
       wheel += e.deltaY;
       const notch = e.ctrlKey ? 12 : 60;
       if (Math.abs(wheel) < notch) return;
-      // Holding a piece in your office, the wheel steps through the hotbar instead of zooming.
-      if (!e.ctrlKey && stepSlot(wheel > 0 ? 1 : -1)) {
-        wheel = 0;
-        return;
-      }
       zoom(wheel < 0 ? 1 : -1);
       wheel = 0;
     },
@@ -417,7 +404,7 @@ function updatePieceHint(me: ReturnType<typeof self>): void {
 }
 
 /** G, or a right-click: take what's there. It goes in the bag, so 🎒 counts one more. */
-export function take(): void {
+function take(): void {
   send(
     conn.take().then((r) => {
       if (r?.drop) {
@@ -441,7 +428,7 @@ function jump(): void {
 /** What the shop pages open on at each shop's counter. */
 const COUNTER_TAB = { furniture: "furniture", clothes: "outfit", barber: "look", pets: "pet" } as const;
 
-/** E in a shop room on its counter or a display: the Shop page on the matching tab (the barber opens the look picker). */
+/** E in a shop room on its counter or a display: the Shop page on the matching tab (the barber opens the Bag on You). */
 function shopInteract(x: number, y: number): boolean {
   const shop = shopOfRoom(world.room);
   const kind = world.map.kind(x, y);
@@ -451,7 +438,7 @@ function shopInteract(x: number, y: number): boolean {
   // Møbelhuset's wallpaper, monitors and company supplies open the page's tab instead).
   const tabbed = tab === "decor" || tab === "desk" || tab === "company";
   if (kind.shop && !tabbed && viewHooks.shop?.(shop, x, y)) return true;
-  hud.set({ panel: tab === "look" || tab === null ? { kind: "look" } : { kind: "shop", tab } });
+  hud.set({ panel: tab === "look" || tab === null ? { kind: "bag", tab: "you" } : { kind: "shop", tab } });
   return true;
 }
 

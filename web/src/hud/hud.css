@@ -323,6 +323,76 @@ textarea:focus {
   }
 }
 
+/* In your own office: what you can put down, a slot a kind along the bottom (Minecraft's hotbar). */
+.hotbar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.hotbar .slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hotbar .slot.on {
+  background: rgba(255, 211, 92, 0.25);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.hotbar .slot.more {
+  font-weight: 700;
+}
+
+.hotbar .key,
+.hotbar .n {
+  position: absolute;
+  font-size: 11px;
+  text-shadow: 1px 1px 0 #000;
+  pointer-events: none;
+}
+
+.hotbar .key {
+  top: 2px;
+  left: 4px;
+  opacity: 0.7;
+}
+
+.hotbar .n {
+  right: 4px;
+  bottom: 2px;
+  font-weight: 700;
+}
+
+/* The dialog and the piece hint stand on the bar, not over it. */
+.hotbar ~ .dialog,
+.hotbar ~ .piece-hint {
+  bottom: 92px;
+}
+
+@media (max-width: 1150px) {
+  .hotbar {
+    bottom: 230px;
+  }
+  .hotbar ~ .dialog,
+  .hotbar ~ .piece-hint {
+    bottom: 310px;
+  }
+}
+
 /* The chat dock: the chat and the quick replies above it, stacked from the bottom-left corner. */
 .chat-dock {
   position: absolute;
@@ -590,6 +660,10 @@ textarea:focus {
   width: min(640px, calc(100vw - 24px));
 }
 
+.modal.xl {
+  width: min(980px, calc(100vw - 24px));
+}
+
 /* Stays at the top while a tall panel scrolls under it. */
 .modal-head {
   position: sticky;
@@ -759,19 +833,6 @@ textarea:focus {
   color: var(--text);
 }
 
-.look {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.look-options {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .cycle {
   display: flex;
   align-items: center;
@@ -847,8 +908,32 @@ textarea:focus {
   width: 100%;
 }
 
+/* The rooms list: a room's name is the button that takes you there. */
+.rooms-box .who {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 12px;
+}
+
+.rooms-box .who:disabled {
+  cursor: default;
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.rooms-box .here:disabled {
+  opacity: 1;
+}
+
+.rooms-box .here {
+  color: var(--accent);
+}
+
 .miniboard-title {
   width: 100%;
+  margin: 0;
   text-align: left;
   border: none;
   background: none;
@@ -1176,7 +1261,132 @@ textarea:focus {
   gap: 8px;
 }
 
-/* The bag: a square per kind; the picked one's name and buttons in a strip above. */
+/* The bag and wardrobe: you and your pet on the left, the tabs beside; changes wait in a save bar. */
+.wardrobe {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.wardrobe-preview {
+  position: sticky;
+  top: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.wardrobe-preview .pet {
+  margin-top: -18px;
+  justify-self: end;
+}
+
+/* The live 3D stage: a soft spotlight on the floor behind you, and the hand that turns you. */
+.wardrobe-preview.stage {
+  gap: 4px;
+  padding: 8px;
+  background: radial-gradient(ellipse at 50% 70%, rgba(255, 211, 92, 0.16), rgba(255, 255, 255, 0.04) 70%);
+}
+
+.turntable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.turntable:active {
+  cursor: grabbing;
+}
+
+.wardrobe-side {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.wardrobe-cycles {
+  display: grid;
+  gap: 6px;
+}
+
+.wardrobe-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+/* Level with the first row of squares, however many rows they wrap to. */
+.wardrobe-label {
+  padding-top: 26px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.wardrobe-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.wardrobe-choices .cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16); /* light enough for a dark hoodie */
+}
+
+.wardrobe-choices .cell.wearing {
+  border-color: var(--accent);
+  background: rgba(255, 211, 92, 0.2);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.wardrobe-choices .none {
+  font-size: 20px;
+  opacity: 0.6;
+}
+
+.wardrobe-save {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.wardrobe-save .muted {
+  margin-right: auto;
+}
+
+@media (max-width: 640px) {
+  .wardrobe {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wardrobe-preview {
+    position: static;
+  }
+}
+
+/* Everything held: a square per kind; the picked one's name and buttons in a strip above. */
 .bag-pick {
   display: flex;
   align-items: center;
@@ -1199,45 +1409,6 @@ textarea:focus {
 
 .bag li {
   position: relative;
-}
-
-/* The pet's look picker: a small eye at the square's top right. */
-.bag .eye {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  line-height: 1;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.bag .eye.pen {
-  top: 28px;
-}
-
-.bag-name {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  margin: 8px 0;
-}
-
-.bag-name label {
-  flex: 1;
-  display: grid;
-  gap: 2px;
-  font-size: 12px;
-}
-
-.bag .eye:hover,
-.bag .eye:focus-visible {
-  background: rgba(0, 0, 0, 0.7);
 }
 
 .bag .cell {
@@ -1843,43 +2014,6 @@ button.lb-item:hover {
 
 .avatar.legendary {
   filter: drop-shadow(0 0 6px rgba(255, 214, 74, 0.75));
-}
-
-/* The pet looks picker: every look of a pet, hopping. */
-.pet-looks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: 6px;
-}
-
-.pet-looks .cell {
-  width: 100%;
-  min-height: 104px;
-  padding: 8px 4px 6px;
-  display: grid;
-  justify-items: center;
-  align-content: end;
-  gap: 4px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.pet-looks .cell[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: rgba(255, 211, 92, 0.2);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.pet-looks .name {
-  font-size: 12px;
-}
-
-.pet-looks .soon {
-  font-size: 10px;
-  opacity: 0.7;
 }
 
 /* The raid: the boss's HP in the corner box and the panel. */
@@ -2741,7 +2875,6 @@ html[data-tier]:not([data-tier="low"]) button.primary:hover {
 html[data-tier]:not([data-tier="low"]) button.link,
 html[data-tier]:not([data-tier="low"]) button.backdrop,
 html[data-tier]:not([data-tier="low"]) .pills button,
-html[data-tier]:not([data-tier="low"]) .bag .eye,
 html[data-tier]:not([data-tier="low"]) .merch-grid button {
   border: none;
   box-shadow: none;
@@ -2802,7 +2935,7 @@ html[data-tier]:not([data-tier="low"]) .bag .cell {
 html[data-tier]:not([data-tier="low"]) .shop li,
 html[data-tier]:not([data-tier="low"]) .bag .cell,
 html[data-tier]:not([data-tier="low"]) .loot-table li,
-html[data-tier]:not([data-tier="low"]) .pet-looks .cell,
+html[data-tier]:not([data-tier="low"]) .wardrobe-choices .cell,
 html[data-tier]:not([data-tier="low"]) .trophies li,
 html[data-tier]:not([data-tier="low"]) .collection li,
 html[data-tier]:not([data-tier="low"]) .hall li {
@@ -2814,7 +2947,7 @@ html[data-tier]:not([data-tier="low"]) .hall li {
 
 html[data-tier]:not([data-tier="low"]) .shop li.wearing,
 html[data-tier]:not([data-tier="low"]) .bag .cell.wearing,
-html[data-tier]:not([data-tier="low"]) .pet-looks .cell[aria-pressed="true"] {
+html[data-tier]:not([data-tier="low"]) .wardrobe-choices .cell.wearing {
   border-color: var(--accent);
   box-shadow: inset 1px 1px 0 var(--bevel-light);
 }
@@ -3388,162 +3521,3 @@ html[data-tier]:not([data-tier="low"]) .loot-table li .avatar {
   color: #72bf52;
   font-weight: 700;
 }
-
-/* The Bag's groups (bagGroups.ts): a heading per category with its count, folding its squares away. */
-.bag-groups {
-  display: grid;
-  gap: 10px;
-}
-
-.bag-group h3 {
-  margin: 0;
-  font-size: 13px;
-}
-
-.bag-group .bag-head {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  width: 100%;
-  padding: 0 4px;
-  text-align: left;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0;
-}
-
-.bag-group .bag[hidden] {
-  display: none;
-}
-
-.bag-group .bag {
-  margin-top: 6px;
-}
-
-@media (max-width: 700px) {
-  /* Narrow screens: the squares fill the row evenly, every one a 44px+ target. */
-  .bag-group .bag {
-    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
-  }
-}
-
-/* === Hotbar (hud/Hotbar.tsx): furniture slots along the bottom while furnishing your office. === */
-.hotbar {
-  position: absolute;
-  bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  z-index: 5;
-}
-.hotbar-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--ink);
-  background: rgba(251, 247, 239, 0.95);
-  border: 2px solid var(--ink);
-  border-radius: 8px;
-  padding: 2px 8px;
-  white-space: nowrap;
-}
-html[data-tier] .hotbar .hotbar-pick {
-  min-height: 28px;
-  padding: 0 10px;
-  font-weight: 700;
-  color: var(--ink);
-  background: var(--accent);
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-}
-.hotbar-slots {
-  display: flex;
-  gap: 4px;
-}
-.hotbar-empty {
-  font-size: 12px;
-  padding: 10px;
-  background: rgba(251, 247, 239, 0.95);
-  border: 2px solid var(--ink);
-  border-radius: 8px;
-  color: var(--ink);
-}
-html[data-tier] .hotbar .hotbar-slot {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  border: 2px solid var(--ink);
-  background: rgba(251, 247, 239, 0.9);
-}
-html[data-tier] .hotbar .hotbar-slot.on {
-  border-color: var(--accent);
-  background: rgba(255, 211, 92, 0.85);
-  box-shadow: 0 0 0 2px var(--accent);
-}
-.hotbar-icon {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 64px;
-  height: 64px;
-  margin: -32px 0 0 -32px;
-  transform: scale(0.6);
-  pointer-events: none;
-}
-.hotbar-key,
-.hotbar-n {
-  position: absolute;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1;
-  color: var(--ink);
-  text-shadow: 0 0 2px #fff;
-  pointer-events: none;
-}
-.hotbar-key {
-  left: 3px;
-  top: 3px;
-}
-.hotbar-n {
-  right: 3px;
-  bottom: 3px;
-}
-/* Narrow screens: a row across the width, above the tray; the hint is just the Pick up button. */
-.hotbar.narrow {
-  left: 8px;
-  right: 8px;
-  bottom: 60px;
-  align-items: center;
-}
-.hotbar.narrow .hotbar-hint {
-  padding: 0;
-  border: none;
-  background: none;
-}
-.hotbar.narrow .hotbar-slots {
-  justify-content: center;
-  max-width: 100%;
-}
-@media (max-width: 700px), (max-height: 500px) {
-  .hotbar-on .dialog,
-  .hotbar-on .piece-hint {
-    bottom: 150px;
-  }
-}
-/* The dialog and the piece hint sit above the bar on wide screens (narrow ones already lift them). */
-@media (min-width: 1151px) {
-  .hotbar-on .dialog,
-  .hotbar-on .piece-hint {
-    bottom: 110px;
-  }
-}
-/* === end Hotbar === */
