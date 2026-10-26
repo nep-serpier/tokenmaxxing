@@ -115,7 +115,9 @@ export function gateText(r: Raid | null, now = Date.now()): string | null {
 }
 
 /** The boss plate's line when the week is over (the 2D game's), else null. */
-export function weekOverText(r: Pick<Raid, "closed" | "kills" | "rules"> & { cleared?: boolean }): string | null {
+export function weekOverText(
+  r: Pick<Raid, "closed" | "kills" | "rules"> & { cleared?: boolean },
+): string | null {
   return r.closed || r.cleared
     ? `🏁 ${r.cleared ? "Ladder cleared" : "Week over"} · ${r.kills.length} fell · opens ${opensAt(r)} Mon`
     : null;

@@ -238,8 +238,9 @@ test("E on your own seat sits you there (the clone goes, the prompt flips), movi
   expect(prompt()).toBe("E · stand up");
   // My clone is not drawn while I sit in it; everyone else's still is.
   const clone = (id: number) =>
-    (l as unknown as { seated: Map<number, { avatar: { root: { visible: boolean } } | null }> }).seated.get(id)
-      ?.avatar;
+    (l as unknown as { seated: Map<number, { avatar: { root: { visible: boolean } } | null }> }).seated.get(
+      id,
+    )?.avatar;
   expect(clone(me)?.root.visible).toBe(false);
   expect(clone(1)?.root.visible).toBe(true);
   let fired = 0;

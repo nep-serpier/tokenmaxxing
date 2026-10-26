@@ -318,7 +318,8 @@ export function RaidPanel() {
           </li>
           <li>
             Every kill pays everyone with {compact(rules.raiderAt)}+ that week so far: 🪙{" "}
-            {rules.rewards.join(", ")} a rung, {Math.round((rules.rewardGrowth - 1) * 100)}% more each level up.
+            {rules.rewards.join(", ")} a rung, {Math.round((rules.rewardGrowth - 1) * 100)}% more each level
+            up.
           </li>
         </ul>
         {raid.last && (
