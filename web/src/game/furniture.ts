@@ -9,12 +9,12 @@ import {
 import { conn, refreshMe, refreshWallet, town } from "../net.ts";
 import { hud } from "../store.ts";
 import { viewHooks } from "./camera.ts";
+import { ghostListeners, placedListeners } from "./furniture-events.ts";
 import { ghostFits, UndoStack } from "./furniture-logic.ts";
 import { send } from "./input.ts";
 import type { Tile } from "./renderer.ts";
 import { pickTile } from "./stage.ts";
 import { roomName, self, world } from "./world.ts";
-import { ghostListeners, placedListeners } from "./furniture-events.ts";
 
 /**
  * Putting furniture down: moving a piece you may take (M), or placing one from the bag or the storeroom. All

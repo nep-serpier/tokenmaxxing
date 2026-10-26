@@ -88,7 +88,6 @@ test("each rung has 1.5× the HP; a kill pays 10, 25, 50, 75, 100, and 10% more 
   expect([1, 2, 3].map((l) => rewardFor(5, l))).toEqual([100, 110, 121]);
   expect(rewardFor(1, 2)).toBe(11);
   expect(rewardFor(2, 2)).toBe(28); // 27.5, rounded
-
 });
 
 test("a day hits for all its tokens, no cap, and a PR is a special attack", () => {

@@ -1,8 +1,8 @@
 import { itemById } from "@tokenmaxxing/core/shop.ts";
 import { useSyncExternalStore } from "react";
 import { town } from "../net.ts";
-import { ghostListeners, placedListeners } from "./furniture-events.ts";
 import { cancel, ghost, startPlace } from "./furniture.ts";
+import { ghostListeners, placedListeners } from "./furniture-events.ts";
 import { cycle, nextAfterPlace, orderSlots, pushRecent } from "./hotbar.ts";
 import { world } from "./world.ts";
 
