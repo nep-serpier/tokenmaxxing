@@ -655,7 +655,7 @@ export const world = actor({
       return null;
     },
 
-    /** E while facing a chair at the poker table: buys you in (🪙 200 from your wallet) and sits you down. */
+    /** E while facing a chair at the poker table: buys you in (the buy-in from your wallet) and sits you down. */
     pokerSit: async (c, facing: unknown): Promise<StepResult> => {
       const p = free(c);
       if (!TAVERN || p?.room !== "inn") return null;
@@ -2339,7 +2339,7 @@ function pokerWhy(err: unknown): string {
 }
 
 /**
- * `p` sits at chair `at`: the seat is held while the town takes the buy-in (🪙 200), then dealt in from the
+ * `p` sits at chair `at`: the seat is held while the town takes the buy-in, then dealt in from the
  * next hand. If the town says no, or they left meanwhile, nothing moves.
  */
 async function pokerSitDown(c: PokerCtx, p: WorldPlayer, at: number): Promise<StepResult> {
