@@ -101,7 +101,7 @@ export const LEGEND: Record<string, TileKind> = {
     ? {
         "♠": {
           name: "poker table",
-          text: "A poker table. Texas Hold'em, 5 and 10 blinds. Sit in a chair to buy in.",
+          text: "A poker table. Texas Hold'em, blinds of 1 and 2. Sit in a chair to buy in.",
         },
         "♣": {
           name: "poker chair",
