@@ -750,7 +750,7 @@ function invoice(c: (k: string) => string): Sculpt {
   const sheet = new Grid();
   const paper: Paint = (p) => (p.y < 40 && hash(p.x, p.y, p.z, 6) < 0.12 ? c("paperDark") : c("paper"));
   for (let x = -11; x <= 11; x++) {
-    const hem = 4 + (((x + 11) % 4) < 2 ? 0 : 3);
+    const hem = 4 + ((x + 11) % 4 < 2 ? 0 : 3);
     sheet.box(x, x, hem, 46, -1, 1, paper);
   }
   // Red header with a row of white letters.

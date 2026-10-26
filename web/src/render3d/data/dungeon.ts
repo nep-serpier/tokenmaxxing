@@ -125,9 +125,27 @@ export const LOOT_HATS: { rows: Record<View, string[]>; pal: Palette }[] = [
   // Paid in Full crown: gold, with a green band and a white tick on it.
   {
     rows: {
-      down: ["...y.y.yy.y.y...", "...yyyyyyyyyy...", "...yggwgggwgy...", "...yggggwgggy...", "...YYYYYYYYYY..."],
-      side: ["...y.y.yy.y.y...", "...yyyyyyyyyy...", "...yggwgggwgy...", "...yggggwgggy...", "...YYYYYYYYYY..."],
-      up: ["...y.y.yy.y.y...", "...yyyyyyyyyy...", "...yggggggggy...", "...yggggggggy...", "...YYYYYYYYYY..."],
+      down: [
+        "...y.y.yy.y.y...",
+        "...yyyyyyyyyy...",
+        "...yggwgggwgy...",
+        "...yggggwgggy...",
+        "...YYYYYYYYYY...",
+      ],
+      side: [
+        "...y.y.yy.y.y...",
+        "...yyyyyyyyyy...",
+        "...yggwgggwgy...",
+        "...yggggwgggy...",
+        "...YYYYYYYYYY...",
+      ],
+      up: [
+        "...y.y.yy.y.y...",
+        "...yyyyyyyyyy...",
+        "...yggggggggy...",
+        "...yggggggggy...",
+        "...YYYYYYYYYY...",
+      ],
     },
     pal: { y: "#f5c842", Y: "#c9971f", g: "#3fae5a", w: C.white },
   },
@@ -368,8 +386,30 @@ export const LOOT_PETS: { frames: [string[], string[]]; pal: Palette }[] = [
   // Piggy bank: a coin dropping in the slot, every one you owe.
   {
     frames: [
-      ["....yy......", "..oooooo.oo.", ".obbkkbboboo", ".obbbbbbbbbo", "obbbbbbbebss", "obbbbbbbbbsn", ".obbbbbbbbbo", ".obbbbbbbbo.", "..obo..obo..", "..ooo..ooo.."],
-      ["..oooooo.oo.", ".obbkkbboboo", ".obbbbbbbbbo", "obbbbbbbebss", "obbbbbbbbbsn", ".obbbbbbbbbo", ".obbbbbbbbo.", "..obo..obo..", "..ooo..ooo..", "............"],
+      [
+        "....yy......",
+        "..oooooo.oo.",
+        ".obbkkbboboo",
+        ".obbbbbbbbbo",
+        "obbbbbbbebss",
+        "obbbbbbbbbsn",
+        ".obbbbbbbbbo",
+        ".obbbbbbbbo.",
+        "..obo..obo..",
+        "..ooo..ooo..",
+      ],
+      [
+        "..oooooo.oo.",
+        ".obbkkbboboo",
+        ".obbbbbbbbbo",
+        "obbbbbbbebss",
+        "obbbbbbbbbsn",
+        ".obbbbbbbbbo",
+        ".obbbbbbbbo.",
+        "..obo..obo..",
+        "..ooo..ooo..",
+        "............",
+      ],
     ],
     pal: { o: C.ink, b: "#f0a0b8", k: "#7a2a3f", y: "#ffd35c", e: C.ink, s: "#f7c0d0", n: "#c05070" },
   },

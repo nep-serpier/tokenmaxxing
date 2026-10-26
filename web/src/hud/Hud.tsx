@@ -349,7 +349,7 @@ function Panel() {
       <Modal title="Menu">
         <nav className="menu">
           {inMyOffice && <OfficeLock />}
-            <MusicToggle />
+          <MusicToggle />
           {MENU.map(([open, label]) => (
             <button key={open.kind} type="button" onClick={() => hud.set({ panel: open })}>
               {label}
