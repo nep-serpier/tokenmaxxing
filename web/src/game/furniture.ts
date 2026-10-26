@@ -14,6 +14,7 @@ import { send } from "./input.ts";
 import type { Tile } from "./renderer.ts";
 import { pickTile } from "./stage.ts";
 import { roomName, self, world } from "./world.ts";
+import { ghostListeners, placedListeners } from "./furniture-events.ts";
 
 /**
  * Putting furniture down: moving a piece you may take (M), or placing one from the bag or the storeroom. All
@@ -37,10 +38,6 @@ export const ghost: {
 /** The last furnishing steps of this session (Ctrl/Cmd+Z). */
 export const undoStack = new UndoStack();
 
-/** Told whenever the mode starts or ends (the hotbar redraws its selected slot). */
-export const ghostListeners = new Set<() => void>();
-/** Told with the item after a piece from the bag was put down for real (the hotbar keeps going with the next). */
-export const placedListeners = new Set<(item: string) => void>();
 const changed = () => {
   for (const l of ghostListeners) l();
 };
