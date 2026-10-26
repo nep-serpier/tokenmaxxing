@@ -817,6 +817,8 @@ const corkBoard = (
   label: string,
   notes: [number, number, number, string][],
   signW: number,
+  /** Pins as little balls (a few hundred triangles); false paints them on the notes, for the Tavern's triangle budget. */
+  ballPins = true,
 ): Model => {
   const m = new Model();
   const H = 1.0;
@@ -848,6 +850,10 @@ const corkBoard = (
       g.fillStyle = C.stoneDark;
       const rnd = seeded(i + 40);
       for (const ly of [6, 11, 16]) g.fillRect(3, ly, Math.floor((w * 4 - 8) * (0.55 + rnd() * 0.45)), 2);
+      if (!ballPins) {
+        g.fillStyle = C.rug;
+        g.fillRect(w * 2 - 2, 1, 4, 4);
+      }
     });
     const note = m.plane(nw, nh, painted(tex), [
       ((x + w / 2 - 14) / 28) * W,
@@ -855,7 +861,8 @@ const corkBoard = (
       -0.46 + 0.056,
     ]);
     note.rotation.z = (((i * 37) % 11) - 5) * 0.012;
-    m.ball(0.022, C.rug, [note.position.x, note.position.y + nh / 2 - 0.04, -0.46 + 0.07], [1, 1, 0.6], 8);
+    if (ballPins)
+      m.ball(0.022, C.rug, [note.position.x, note.position.y + nh / 2 - 0.04, -0.46 + 0.07], [1, 1, 0.6], 8);
   }
   // A plank over it: QUESTS.
   const sign = panel(
@@ -900,6 +907,7 @@ const requestBoard = (): Model =>
       [17, 11, 9, "#f2a0b8"],
     ],
     0.88,
+    false,
   );
 
 /** The Hall of Fame wall, two tiles: a crest panel and a scroll of names, in gold frames. */
