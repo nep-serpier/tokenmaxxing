@@ -10,6 +10,7 @@ import { extraAssetById } from "../furniture/furniture3d.ts";
 import { earnedBy } from "../furniture/trophies3d.ts";
 import { beginTickScope, canvasTexture, endTickScope, Model, painted } from "../kit/kit.ts";
 import { PETS_ASSETS } from "../pets/pets3d.ts";
+import { DeskSetups } from "./desk-setups.ts";
 import { exitDoorway, exitStairs } from "./exits3d.ts";
 import { type Placed, Room, type Turn } from "./room.ts";
 import { viewOf } from "./room-skin.ts";
@@ -198,7 +199,12 @@ function buildFurnished(id: RoomId, ctx: RoomCtx): RoomView {
     extra: built.value,
   };
   const world = new WorldRoom(office ? "office" : "common", map, skin);
-  return viewOf(id, map, world, built.ticks, { extra: built.value, keepers: new Set() });
+  const desks = new DeskSetups(map, built.value.placed, inset);
+  return viewOf(id, map, world, built.ticks, {
+    extra: built.value,
+    keepers: new Set(),
+    frame: (f) => desks.update(f.now),
+  });
 }
 
 registerRoom("office", buildFurnished);
