@@ -41,6 +41,7 @@ import { Poker } from "./Poker.tsx";
 import { Quests } from "./Quests.tsx";
 import { RaidBox, RaidPanel, RaidToast } from "./Raid.tsx";
 import { Regulars } from "./Regulars.tsx";
+import { Requests } from "./Requests.tsx";
 import { Shop } from "./Shop.tsx";
 import { ShopDirectory } from "./ShopDirectory.tsx";
 import { Sky } from "./Sky.tsx";
@@ -322,6 +323,7 @@ function Panel() {
     trades: () => <TradesPanel />,
     quests: () => <Quests />,
     tournament: () => <Tournament />,
+    requests: () => <Requests />,
     hallOfFame: () => <HallOfFame />,
     collection: () => <Collection />,
     regulars: () => <Regulars />,
