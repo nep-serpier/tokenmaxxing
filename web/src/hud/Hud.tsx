@@ -21,6 +21,7 @@ import { CompanyPanel } from "./CompanyPanel.tsx";
 import { CompanyShop } from "./CompanyShop.tsx";
 import { FpsMeter, GraphicsPanel, GraphicsToast } from "./Graphics.tsx";
 import { HallOfFame } from "./HallOfFame.tsx";
+import { Hotbar } from "./Hotbar.tsx";
 import { Jukebox } from "./Jukebox.tsx";
 import { Leaderboard } from "./Leaderboard.tsx";
 import { LookPicker } from "./LookPicker.tsx";
@@ -62,6 +63,7 @@ export function Hud() {
   return (
     <>
       <Hints />
+      <Hotbar />
       <Stats />
       {narrow ? (
         <>
@@ -161,6 +163,12 @@ function Hints() {
         <dd>Interact</dd>
         <dt>G</dt>
         <dd>Take</dd>
+        <dt>1-9</dt>
+        <dd>Hotbar: place a piece (own office)</dd>
+        <dt>[ ] / wheel</dt>
+        <dd>Next piece while placing</dd>
+        <dt>F</dt>
+        <dd>Pick up the piece you face (own office)</dd>
         <dt>Right-click</dt>
         <dd>Go and take</dd>
         <dt>Enter</dt>
