@@ -162,6 +162,40 @@ jobs:
             minisign -V -p "$dir/key.pub" -m "$dir/update" -x "$dir/update.minisig"
           done
 
+  # The Windows desktop app: an unsigned NSIS installer that doesn't update itself yet
+  # (tauri.windows.conf.json). Also as Tokenmaxxing-Setup.exe, so releases/latest/download/Tokenmaxxing-Setup.exe
+  # (the website's Windows button) is always the newest. The Mac app doesn't wait for it.
+  windows:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/desktop/src-tauri
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run desktop:build
+        env:
+          TOKENMAXXING_SERVER_URL: ${{ vars.TOKENMAXXING_SERVER_URL }}
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag }}
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: |
+          exe="app/desktop/src-tauri/target/release/bundle/nsis/Tokenmaxxing_${VERSION}_x64-setup.exe"
+          test -f "$exe"
+          cp "$exe" Tokenmaxxing-Setup.exe
+          gh release upload "$TAG" "$exe" Tokenmaxxing-Setup.exe --clobber
+
   # The CLI for linked computers (ARCHITECTURE.md, "Linked computers"): a binary per platform and their checksums on this
   # release, where the server's /install.sh downloads them from. On a Mac, so Bun signs the Mac ones.
   cli:

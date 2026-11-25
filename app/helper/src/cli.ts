@@ -16,6 +16,7 @@ import {
   runCommand,
   serviceRunning,
   uninstallService,
+  windowsDir,
 } from "./service.ts";
 
 /**
@@ -52,7 +53,9 @@ const configDir = (): string =>
   process.env.TOKENMAXXING_CLI_DIR ||
   (process.platform === "darwin"
     ? join(homedir(), "Library", "Application Support", "Tokenmaxxing CLI")
-    : join(configHome(), "tokenmaxxing"));
+    : process.platform === "win32"
+      ? windowsDir()
+      : join(configHome(), "tokenmaxxing"));
 
 const configPath = () => join(configDir(), "config.json");
 const statePath = () => join(configDir(), "state.json");
@@ -161,10 +164,16 @@ async function link(code: string | undefined, opts: { name?: string; server?: st
     if (s.note) console.log(s.note);
   } else {
     console.log(`Couldn't set up the background service (${s.why}). Keep it running with:`);
-    const command = runCommand()
-      .map((word) => JSON.stringify(word))
-      .join(" ");
-    console.log(`  nohup ${command} >> ~/tokenmaxxing.log 2>&1 &`);
+    const [program = "", ...args] = runCommand();
+    if (process.platform === "win32") {
+      const ps = (s: string) => `'${s.replace(/'/g, "''")}'`;
+      console.log(
+        `  Start-Process -WindowStyle Hidden ${ps(program)} -ArgumentList ${args.map(ps).join(",")}`,
+      );
+    } else {
+      const command = [program, ...args].map((word) => JSON.stringify(word)).join(" ");
+      console.log(`  nohup ${command} >> ~/tokenmaxxing.log 2>&1 &`);
+    }
   }
 }
 

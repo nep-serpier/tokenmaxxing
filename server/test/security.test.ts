@@ -172,3 +172,15 @@ describe("/install.sh", () => {
     expect(script).not.toContain("__SERVER__");
   });
 });
+
+describe("/install.ps1", () => {
+  test("points the CLI at the server it came from", async () => {
+    const r = await fetch(`${origin}/install.ps1`);
+    expect(r.headers.get("content-type")).toStartWith("text/plain");
+    const script = await r.text();
+    expect(script).toContain(`$server = '${origin}'`);
+    expect(script).not.toContain("__SERVER__");
+    // Pasted into the user's own window: `exit` would close it.
+    expect(script).not.toMatch(/^\s*exit\b/m);
+  });
+});

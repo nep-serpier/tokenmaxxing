@@ -9,6 +9,22 @@ const PLATFORMS: Record<string, string> = { darwin: "macOS", linux: "Linux", win
 
 const devices = () => withPlayer((p) => p.devices());
 
+/** The lines that link another computer: one for a macOS or Linux terminal, one for PowerShell. */
+interface Lines {
+  command: string;
+  windowsCommand: string | null;
+}
+
+/** Both lines from the app; an app from before Windows had only the one. */
+async function linkLines(): Promise<Lines> {
+  const invoke = tauri!.core.invoke;
+  try {
+    return await invoke<Lines>("link_computer_lines");
+  } catch {
+    return { command: await invoke<string>("link_computer"), windowsCommand: null };
+  }
+}
+
 /** "just now", "5 min ago", "3 h ago", "2 days ago". */
 function ago(at: number, now: number): string {
   const min = Math.floor((now - at) / 60_000);
@@ -24,8 +40,8 @@ function ago(at: number, now: number): string {
  */
 export function Computers() {
   const [list, setList] = useState<DeviceInfo[] | null>(null);
-  const [command, setCommand] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [lines, setLines] = useState<Lines | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const { error, busy, run } = useRun();
 
   useEffect(() => {
@@ -33,7 +49,7 @@ export function Computers() {
   }, []);
   // While a line is out, watch for the new computer to show up, over one connection for the while.
   useEffect(() => {
-    if (!command) return;
+    if (!lines) return;
     const player = connectPlayer();
     // Every 5 s, so a computer shows up within a few seconds of linking.
     const id = setInterval(() => void player.devices().then(setList, () => {}), 5000);
@@ -41,16 +57,28 @@ export function Computers() {
       clearInterval(id);
       player.dispose();
     };
-  }, [command]);
+  }, [lines]);
 
   const link = run(async () => {
-    setCommand(await tauri!.core.invoke<string>("link_computer"));
-    setCopied(false);
+    setLines(await linkLines());
+    setCopied(null);
   });
-  const copy = run(async () => {
-    await navigator.clipboard.writeText(command!);
-    setCopied(true);
-  });
+  const copy = (line: string) =>
+    run(async () => {
+      await navigator.clipboard.writeText(line);
+      setCopied(line);
+    });
+  const line = (label: string, text: string) => (
+    <>
+      <p className="small">{label}</p>
+      <div className="command">
+        <code>{text}</code>
+        <button type="button" onClick={copy(text)}>
+          {copied === text ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </>
+  );
   const remove = (id: number) =>
     run(async () => {
       await withPlayer((p) => p.revokeDevice(id));
@@ -84,15 +112,10 @@ export function Computers() {
       )}
       {!tauri ? (
         <p className="muted small">To link another computer, open the world from the app.</p>
-      ) : command ? (
+      ) : lines ? (
         <>
-          <p className="small">Run this in a terminal on the other computer (macOS or Linux):</p>
-          <div className="command">
-            <code>{command}</code>
-            <button type="button" onClick={copy}>
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
+          {line("On macOS or Linux, run this in a terminal:", lines.command)}
+          {lines.windowsCommand && line("On Windows, run this in PowerShell:", lines.windowsCommand)}
           <p className="muted small">
             It works once, for 10 minutes. The computer shows up here once it's linked.
           </p>

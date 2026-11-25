@@ -1,0 +1,113 @@
+# The Windows desktop app and CLI, on Windows: checked, and built as downloads to try, when a pull
+# request changes them or by hand. Not on every PR like `CI` (#85 trimmed per-PR Windows minutes).
+name: Windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - app/desktop/**
+      - app/helper/**
+      - core/src/protocol.ts
+      - .github/workflows/windows.yml
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/desktop/src-tauri
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun test app/helper/test/service.test.ts app/helper/test/platform-paths.test.ts
+      # The build checks the sidecar exists.
+      - run: bun app/desktop/scripts/helper.ts
+      - working-directory: app/desktop/src-tauri
+        run: |
+          cargo clippy --all-targets -- -D warnings
+          cargo test
+      # Registering the task checks its XML against Task Scheduler's schema; it's removed straight after.
+      - name: Task Scheduler takes the CLI's task
+        run: |
+          bun -e '
+            import { taskXml } from "./app/helper/src/service.ts";
+            const xml = taskXml("C:\\Program Files\\x y\\service.cmd", `${process.env.USERDOMAIN}\\${process.env.USERNAME}`);
+            await Bun.write("task.xml", Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(xml, "utf16le")]));
+          '
+      - shell: pwsh
+        run: |
+          schtasks /Create /TN "Tokenmaxxing CI check" /XML task.xml /F
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          (Get-ScheduledTask -TaskName "Tokenmaxxing CI check").Actions | Format-List Execute, Arguments
+          schtasks /Delete /TN "Tokenmaxxing CI check" /F
+      # From the helper's own dir: `bun build --compile` inlines .env files from the cwd.
+      - name: Build the CLI
+        working-directory: app/helper
+        run: |
+          bun build src/cli.ts --compile --minify --target=bun-windows-x64-baseline --outfile ../../dist/tokenmaxxing-windows-x64.exe
+          ../../dist/tokenmaxxing-windows-x64.exe --version
+      # install.ps1 as the app's line runs it, against a stand-in release: download, checksum, install, PATH,
+      # then the CLI with the script's arguments. In Windows PowerShell 5.1 and in PowerShell 7.
+      - name: Serve a stand-in release
+        run: |
+          mkdir -p release
+          cp dist/tokenmaxxing-windows-x64.exe release/
+          (cd release && sha256sum tokenmaxxing-windows-x64.exe > SHA256SUMS)
+          sed 's#__SERVER__#http://localhost:8787#' server/src/install.ps1 > install.ps1
+          echo 'Bun.serve({ port: 9999, fetch: (r) => new Response(Bun.file(`release${new URL(r.url).pathname}`)) });' > serve.ts
+      # Start-Process: it outlives the step, which a shell's background job may not.
+      - shell: pwsh
+        run: |
+          Start-Process bun -ArgumentList 'serve.ts'
+          Start-Sleep 2
+          Invoke-WebRequest http://localhost:9999/SHA256SUMS | Out-Null
+      - name: install.ps1 in Windows PowerShell
+        shell: powershell
+        env:
+          TOKENMAXXING_DOWNLOAD_BASE: http://localhost:9999
+        run: |
+          $env:TOKENMAXXING_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'tm-ps5'
+          & ([scriptblock]::Create((Get-Content install.ps1 -Raw))) --version
+          if ((& (Join-Path $env:TOKENMAXXING_INSTALL_DIR 'tokenmaxxing.exe') --version) -ne (Get-Content package.json -Raw | ConvertFrom-Json).version) { exit 1 }
+      - name: install.ps1 in PowerShell 7, over an install
+        shell: pwsh
+        env:
+          TOKENMAXXING_DOWNLOAD_BASE: http://localhost:9999
+        run: |
+          $env:TOKENMAXXING_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'tm-ps5'
+          & ([scriptblock]::Create((Get-Content install.ps1 -Raw))) --version
+          if (-not (Test-Path (Join-Path $env:TOKENMAXXING_INSTALL_DIR 'tokenmaxxing.old.exe'))) { exit 1 }
+      - name: install.ps1 refuses a bad checksum
+        shell: pwsh
+        env:
+          TOKENMAXXING_DOWNLOAD_BASE: http://localhost:9999
+        run: |
+          Set-Content release/SHA256SUMS ('0' * 64 + '  tokenmaxxing-windows-x64.exe')
+          $env:TOKENMAXXING_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'tm-bad'
+          try { & ([scriptblock]::Create((Get-Content install.ps1 -Raw))) --version; exit 1 } catch { $_.Exception.Message }
+          if (Test-Path (Join-Path $env:TOKENMAXXING_INSTALL_DIR 'tokenmaxxing.exe')) { exit 1 }
+      # Without the repository's variable (a fork), the app talks to a local server.
+      - name: Build the installer
+        env:
+          TOKENMAXXING_SERVER_URL: ${{ vars.TOKENMAXXING_SERVER_URL || 'http://localhost:8787' }}
+        run: bun run desktop:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            dist/tokenmaxxing-windows-x64.exe
+            app/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe

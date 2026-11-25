@@ -118,7 +118,9 @@ export class Helper {
       linkComputer: async (): Promise<LinkComputer> => {
         const code = await this.call(() => this.player().mintLinkCode());
         const command = `curl -fsSL ${this.serverUrl}/install.sh | sh -s -- link ${code}`;
-        return { code, command };
+        // `irm | iex` can't pass the script arguments; a script block made from it can.
+        const windowsCommand = `& ([scriptblock]::Create((irm ${this.serverUrl}/install.ps1))) link '${code}'`;
+        return { code, command, windowsCommand };
       },
     });
   }

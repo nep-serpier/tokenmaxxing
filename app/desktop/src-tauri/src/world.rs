@@ -91,19 +91,35 @@ pub async fn enter_world(app: AppHandle, name: Option<String>) -> Result<String,
         .ok_or_else(|| "internal".into())
 }
 
-/// From the game page: the line to run on another computer to add its usage to this account (it
-/// installs the CLI there, with a link code good for 10 minutes).
+/// The helper's `LinkComputer`: a link code good for 10 minutes, and the lines that install the CLI
+/// with it on another computer.
+async fn link_lines(app: AppHandle) -> Result<serde_json::Value, String> {
+    let helper = app.state::<Arc<Helper>>().inner().clone();
+    tauri::async_runtime::spawn_blocking(move || helper.call(json!({ "cmd": "linkComputer" })))
+        .await
+        .map_err(|_| "internal".to_string())?
+}
+
+/// From the game page: the line to run on another macOS or Linux computer to add its usage to this
+/// account. Kept for game pages from before `link_computer_lines`.
 #[tauri::command]
 pub async fn link_computer(app: AppHandle) -> Result<String, String> {
-    let helper = app.state::<Arc<Helper>>().inner().clone();
-    let result =
-        tauri::async_runtime::spawn_blocking(move || helper.call(json!({ "cmd": "linkComputer" })))
-            .await
-            .map_err(|_| "internal".to_string())??;
-    result["command"]
+    link_lines(app).await?["command"]
         .as_str()
         .map(String::from)
         .ok_or_else(|| "internal".into())
+}
+
+/// From the game page: both lines, `{ command, windowsCommand }`, for macOS or Linux and for Windows.
+#[tauri::command]
+pub async fn link_computer_lines(app: AppHandle) -> Result<serde_json::Value, String> {
+    let lines = link_lines(app).await?;
+    match (lines["command"].as_str(), lines["windowsCommand"].as_str()) {
+        (Some(command), Some(windows)) => {
+            Ok(json!({ "command": command, "windowsCommand": windows }))
+        }
+        _ => Err("internal".into()),
+    }
 }
 
 /// From the game page: a link out of the game (a company's website) opens in the browser. The page
