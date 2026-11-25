@@ -151,16 +151,22 @@ The game draws through a `Renderer`; on Medium and up that is a Three.js voxel r
 A second computer running agents syncs into the same player.
 
 - **The CLI** (`app/helper/src/cli.ts`) wraps the same `Helper` as the app: `link`, `run`, `sync`, `status`,
-  `logs`, `unlink`. Its token and read positions are in `~/Library/Application Support/Tokenmaxxing CLI/` or
-  `$XDG_CONFIG_HOME/tokenmaxxing/` (`TOKENMAXXING_CLI_DIR` for tests), the token readable only by its user.
-  It won't link on a Mac where the app syncs already.
+  `logs`, `unlink`. Its token and read positions are in `~/Library/Application Support/Tokenmaxxing CLI/`,
+  `$XDG_CONFIG_HOME/tokenmaxxing/` or `%LOCALAPPDATA%\Tokenmaxxing CLI\` (`TOKENMAXXING_CLI_DIR` for tests), the
+  token readable only by its user. It won't link on a computer where the app syncs already.
 - **The service** (`service.ts`): a LaunchAgent, or a `systemd --user` unit with lingering on, so it runs
-  while nobody's logged in. Both carry the `PATH` and log-location variables from when it was linked, and
-  restart it only when it fails: once its token is revoked, it removes itself and exits cleanly.
-- **Installing** (`server/src/install.sh`, served at `/install.sh` with the server's own origin filled in):
-  picks the binary for the OS and CPU, checks it against `SHA256SUMS` from the latest release, and runs it
-  with its arguments. The binaries are `bun build --compile` output (`app/helper/scripts/cli.sh`), built on a
-  Mac so the Mac ones are signed ad hoc; curl doesn't quarantine what it downloads.
+  while nobody's logged in, or on Windows a Scheduled Task at the user's sign-in. That runs a batch file
+  (`service.cmd`, next to the token) through `conhost --headless`, so no window opens; the batch file sets
+  the variables, appends to `cli.log` and does the restarting itself. All carry the `PATH` and log-location
+  variables from when it was linked, and restart it only when it fails: once its token is revoked, it
+  removes itself and exits cleanly.
+- **Installing** (`server/src/install.sh` and `install.ps1`, served at `/install.sh` and `/install.ps1` with
+  the server's own origin filled in): picks the binary for the OS and CPU, checks it against `SHA256SUMS`
+  from the latest release, and runs it with its arguments. The PowerShell one runs in the window it's pasted
+  into, so it never calls `exit`; it puts the CLI on the user's PATH, and renames a running one out of the
+  way rather than replacing it. The binaries are `bun build --compile` output (`app/helper/scripts/cli.sh`),
+  built on a Mac so the Mac ones are signed ad hoc; curl doesn't quarantine what it downloads, nor does
+  `Invoke-WebRequest`, so neither Gatekeeper nor SmartScreen asks.
 - **The game** shows your computers on your own card (`web/src/hud/Computers.tsx`) and removes them; only the
   app's window can make a link code.
 

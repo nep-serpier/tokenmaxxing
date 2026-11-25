@@ -27,8 +27,9 @@ pub struct Ui {
     pub update: updates::Status,
     /// Opened by hand (not at login), or before the helper was up: the game opens once the account is known.
     pub open_on_ready: bool,
-    /// "Link a computer…" put its line on the clipboard; its code works until then.
-    pub link_copied_until: Option<std::time::Instant>,
+    /// "Link a computer…" (or "Link a Windows computer…", `true`) put its line on the clipboard; its
+    /// code works until then.
+    pub link_copied: Option<(std::time::Instant, bool)>,
 }
 
 /// The login item passes this, so starting at login stays in the menu bar.
@@ -68,6 +69,7 @@ pub fn run() {
             world::enter_world,
             world::open_link,
             world::link_computer,
+            world::link_computer_lines,
             updates::update_status,
             updates::install_update
         ])

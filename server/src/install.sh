@@ -11,7 +11,7 @@ DIR="${TOKENMAXXING_INSTALL_DIR:-$HOME/.local/bin}"
 case "$(uname -s)" in
   Darwin) os=darwin ;;
   Linux) os=linux ;;
-  *) echo "tokenmaxxing runs on macOS and Linux (on Windows, inside WSL)." >&2; exit 1 ;;
+  *) echo "tokenmaxxing runs on macOS and Linux here. On Windows, use the PowerShell line from the app: Link a Windows computer…" >&2; exit 1 ;;
 esac
 case "$(uname -m)" in
   arm64 | aarch64) arch=arm64 ;;

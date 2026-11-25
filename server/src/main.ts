@@ -6,7 +6,7 @@ import { loadConfig } from "./config.ts";
 import { stopEngine } from "./engine.ts";
 import { type Page, pageHeaders } from "./headers.ts";
 import { healthCheck } from "./health.ts";
-import { installScript } from "./install.ts";
+import { installPowerShell, installScript } from "./install.ts";
 import { rivetProxy } from "./proxy.ts";
 import { diagnose, failureWindow, type ProbeResult, watchdogConfig } from "./watchdog.ts";
 
@@ -205,6 +205,7 @@ const server = Bun.serve({
     "/health": health,
     "/metrics": metrics,
     "/install.sh": installScript,
+    "/install.ps1": installPowerShell,
     // Company logos, copied from their websites. Sandboxed: an SVG is someone else's markup.
     "/logos/:file": async (req) => {
       const file = Bun.file(join(LOGO_DIR, req.params.file));

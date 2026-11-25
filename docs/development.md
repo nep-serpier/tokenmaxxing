@@ -68,10 +68,14 @@ The desktop app can be built natively on Linux and Windows with `bun run desktop
 Windows x64 produces an NSIS `.exe` installer. The helper build hook uses Bun, so Git Bash is not
 required for local Windows builds. The existing signed macOS release pipeline is unchanged.
 
-CI checks Rust on all three platforms and uploads unsigned Linux/Windows preview installers as
-`desktop-Linux` and `desktop-Windows` artifacts. These use the repository's `TOKENMAXXING_SERVER_URL`
-variable, or `http://localhost:8787` when it is unavailable (such as on a fork). A local release build
-must set `TOKENMAXXING_SERVER_URL` explicitly; in PowerShell:
+`CI` checks the desktop app on macOS only. The `Windows` workflow runs when a pull request changes
+`app/desktop`, `app/helper` or the protocol, and by hand: clippy and `cargo test` on Windows, the CLI's
+scheduled task registered with Task Scheduler, `install.ps1` against a stand-in release in Windows
+PowerShell and PowerShell 7, and the installer and CLI uploaded as the `windows` artifact. The installer
+uses the repository's `TOKENMAXXING_SERVER_URL` variable, or `http://localhost:8787` without it (a fork).
+Each release attaches the Windows installer as `Tokenmaxxing_<version>_x64-setup.exe` and
+`Tokenmaxxing-Setup.exe` (the website's Windows button). Linux has no CI job or published package. A
+local release build must set `TOKENMAXXING_SERVER_URL` explicitly; in PowerShell:
 
 ```powershell
 $env:TOKENMAXXING_SERVER_URL = "http://localhost:8787"
@@ -87,9 +91,10 @@ fallback. Sync state is in `~/Library/Application Support/Tokenmaxxing` on macOS
 
 Native manual QA is still required: onboarding, restart with saved credentials, tray menu and
 clipboard, token sync, launch at login, and closing/reopening the world. Linux needs a tray host
-(GNOME may require an AppIndicator extension). Windows signing, Linux/Windows updater artifacts and
-release publishing remain follow-ups; previews disable update checks and do not generate signed updater artifacts.
-The linked-computer CLI installer and service manager still support macOS/Linux only.
+(GNOME may require an AppIndicator extension). Windows signing, Linux/Windows updater artifacts and a
+published Linux package remain follow-ups; previews disable update checks and do not generate signed
+updater artifacts. The Windows app can only make a new account: a Windows PC joins an existing one as a
+linked computer (`install.ps1`).
 
 To sync without the UI:
 

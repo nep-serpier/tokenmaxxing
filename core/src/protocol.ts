@@ -30,10 +30,14 @@ export type Message =
   /** After signUp → save to Keychain. `null` → the token was rejected; delete it. */
   | { event: "token"; token: string | null };
 
-/** A single-use link code (10 minutes) and the line that installs the CLI with it on another computer. */
+/**
+ * A single-use link code (10 minutes) and the lines that install the CLI with it on another computer:
+ * `command` in a macOS or Linux terminal, `windowsCommand` in PowerShell.
+ */
 export interface LinkComputer {
   code: string;
   command: string;
+  windowsCommand: string;
 }
 
 /** A Tokenmaxxing battle I'm in. The app syncs fast until `until`. */

@@ -188,9 +188,12 @@ describe("helper", () => {
     await send(init(u.token));
     const r = (await send({ cmd: "linkComputer" })) as {
       ok: true;
-      result: { code: string; command: string };
+      result: { code: string; command: string; windowsCommand: string };
     };
     expect(r.result.command).toBe(`curl -fsSL ${origin}/install.sh | sh -s -- link ${r.result.code}`);
+    expect(r.result.windowsCommand).toBe(
+      `& ([scriptblock]::Create((irm ${origin}/install.ps1))) link '${r.result.code}'`,
+    );
     const linked = await client.player.get([String(u.userId)]).redeemLinkCode(r.result.code, "box", "linux");
     expect(linked.token).toMatch(new RegExp(`^${u.userId}\\.`));
     helper.stop();

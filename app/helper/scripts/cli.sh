@@ -6,12 +6,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 OUT="$(mkdir -p "${1:-$ROOT/dist/cli}" && cd "${1:-$ROOT/dist/cli}" && pwd)"
 
-# <bun target> <name>. x64 Linux uses the baseline build: workhorse VMs often lack AVX2.
+# <bun target> <name>. x64 Linux and Windows use the baseline build: workhorse VMs often lack AVX2.
 targets=(
   "bun-darwin-arm64 tokenmaxxing-darwin-arm64"
   "bun-darwin-x64 tokenmaxxing-darwin-x64"
   "bun-linux-arm64 tokenmaxxing-linux-arm64"
   "bun-linux-x64-baseline tokenmaxxing-linux-x64"
+  "bun-windows-x64-baseline tokenmaxxing-windows-x64.exe"
+  "bun-windows-arm64 tokenmaxxing-windows-arm64.exe"
 )
 for t in "${targets[@]}"; do
   read -r target name <<<"$t"

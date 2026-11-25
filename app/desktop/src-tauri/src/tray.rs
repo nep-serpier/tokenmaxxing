@@ -88,16 +88,25 @@ fn menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
         items.push(Box::new(PredefinedMenuItem::separator(app)?));
         items.push(Box::new(item("sync", "Sync now", true, None)?));
         items.push(Box::new(item("link", "Link a computer…", true, None)?));
-        if ui
-            .link_copied_until
-            .is_some_and(|until| Instant::now() < until)
-        {
-            items.push(Box::new(item(
-                "copied",
-                "Copied: paste it in a terminal on the other computer",
-                false,
-                None,
-            )?));
+        items.push(Box::new(item(
+            "link-windows",
+            "Link a Windows computer…",
+            true,
+            None,
+        )?));
+        if let Some((until, windows)) = ui.link_copied {
+            if Instant::now() < until {
+                items.push(Box::new(item(
+                    "copied",
+                    if windows {
+                        "Copied: paste it in PowerShell on the Windows computer"
+                    } else {
+                        "Copied: paste it in a terminal on the other computer"
+                    },
+                    false,
+                    None,
+                )?));
+            }
         }
     } else {
         items.push(Box::new(item("open", "Pick a name…", true, None)?));
@@ -152,17 +161,19 @@ fn on_menu(app: &AppHandle, event: MenuEvent) {
                 }
             });
         }
-        "link" => {
+        id @ ("link" | "link-windows") => {
+            let windows = id == "link-windows";
+            let field = if windows { "windowsCommand" } else { "command" };
             let app = app.clone();
             let helper = app.state::<Arc<Helper>>().inner().clone();
             std::thread::spawn(move || {
                 match helper
                     .call(json!({ "cmd": "linkComputer" }))
-                    .and_then(|r| copy(&app, r["command"].as_str().unwrap_or_default()))
+                    .and_then(|r| copy(&app, r[field].as_str().unwrap_or_default()))
                 {
                     Ok(()) => {
-                        app.state::<Shared>().lock().unwrap().link_copied_until =
-                            Some(Instant::now() + LINK_CODE_LIFE);
+                        app.state::<Shared>().lock().unwrap().link_copied =
+                            Some((Instant::now() + LINK_CODE_LIFE, windows));
                         refresh(&app);
                     }
                     Err(e) => log::warn!("link a computer: {e}"),

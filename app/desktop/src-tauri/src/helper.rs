@@ -367,7 +367,7 @@ mod tests {
                 result: Err("name_taken".into())
             }
         );
-        // `linkComputer`: world.rs hands `command` to the game page.
+        // `linkComputer`: world.rs hands both lines to the game page; the tray copies one.
         let Message::Reply {
             result: Ok(link), ..
         } = &messages[7]
@@ -377,6 +377,10 @@ mod tests {
         assert_eq!(
             link["command"].as_str(),
             Some("curl -fsSL https://x/install.sh | sh -s -- link 12.y")
+        );
+        assert_eq!(
+            link["windowsCommand"].as_str(),
+            Some("& ([scriptblock]::Create((irm https://x/install.ps1))) link '12.y'")
         );
     }
 }

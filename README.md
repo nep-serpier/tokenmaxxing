@@ -31,6 +31,11 @@ brew install --cask hanskristoffer/tap/tokenmaxxing
 Open **Tokenmaxxing** and pick a name. It lives in your menu bar, syncs in the background and shows
 today's tokens next to the ⚡. Choose **Open world** to step into town. The app keeps itself up to date.
 
+On Windows, a preview: [Tokenmaxxing-Setup.exe](https://github.com/HansKristoffer/tokenmaxxing/releases/latest/download/Tokenmaxxing-Setup.exe).
+It isn't signed yet, so Windows asks first (**More info** → **Run anyway**), and it doesn't update itself:
+install the newest one over it. It makes a new account; to add a Windows PC to the one you have, link it
+(below).
+
 ## What's in town
 
 <table>
@@ -89,16 +94,24 @@ Exactly what is read and sent: [docs/privacy.md](docs/privacy.md). How every num
 
 ## A second computer
 
-Running agents on a Mac mini or a Linux box too? In the app, choose **Link a computer…** (in the menu bar,
-or on your own card in the game). It gives you a command to run on the other machine, valid for 10 minutes:
+Running agents on a Mac mini, a Linux box or a Windows PC too? In the app, choose **Link a computer…**
+(or **Link a Windows computer…**) in the menu bar, or **Link a computer** on your own card in the game. It
+gives you a line to run on the other machine, valid for 10 minutes. On macOS or Linux, in a terminal:
 
 ```bash
 curl -fsSL https://<server>/install.sh | sh -s -- link 42.Xk3…
 ```
 
-It installs the `tokenmaxxing` command (macOS or Linux, in `~/.local/bin`), sends that machine's history
-and keeps syncing in the background. Then use `tokenmaxxing status`, `sync`, `logs` and `unlink`. A linked
-computer can only send usage: it can't chat, spend coins or open the world.
+On Windows, in PowerShell (no admin, no WSL):
+
+```powershell
+& ([scriptblock]::Create((irm https://<server>/install.ps1))) link '42.Xk3…'
+```
+
+It installs the `tokenmaxxing` command (in `~/.local/bin`, or `%LOCALAPPDATA%\Programs\tokenmaxxing` on
+Windows), sends that machine's history and keeps syncing in the background. Windows syncs while you're
+signed in, and starts again at every sign-in. Then use `tokenmaxxing status`, `sync`, `logs` and `unlink`.
+A linked computer can only send usage: it can't chat, spend coins or open the world.
 
 ## Development
 

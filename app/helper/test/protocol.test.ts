@@ -41,7 +41,11 @@ const messages: Message[] = [
   {
     id: 4,
     ok: true,
-    result: { code: "12.y", command: "curl -fsSL https://x/install.sh | sh -s -- link 12.y" },
+    result: {
+      code: "12.y",
+      command: "curl -fsSL https://x/install.sh | sh -s -- link 12.y",
+      windowsCommand: "& ([scriptblock]::Create((irm https://x/install.ps1))) link '12.y'",
+    },
   },
 ];
 
